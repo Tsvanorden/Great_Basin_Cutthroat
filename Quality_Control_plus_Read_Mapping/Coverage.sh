@@ -12,7 +12,7 @@ module load samtools
 echo "Job started on $(hostname) at $(date)" >&2
 module list >&2
 
-# List of BAM files (one per line)
+# List of BAM files (one per line) 
 BAM_LIST="All_Samples.txt"
 
 # Output file
@@ -26,8 +26,15 @@ while read -r BAM; do
     echo "Processing $SAMPLE" >&2
 
     # Coverage stats
+    # $3 is the column that includes the depth statistic. NR is the total number of lines which corresponds to the total number of positions. c is a counter
+
+    #Mean Depth. Divides total depth in $3 by the total number of positions NR
     MEAN_DEPTH=$(samtools depth -aa "$BAM" | awk '{sum+=$3} END {if(NR>0) print sum/NR; else print 0}')
+
+    #Breadth 1x. If the depth at that position is greater than 1, add to the counter. Divide that counter by total sites and multipl by 100 to get percent
     BREADTH_1X=$(samtools depth -aa "$BAM" | awk '{if($3>=1) c++} END {if(NR>0) print c/NR*100; else print 0}')
+
+    #Breadth 5x. If the depth at that position is greater than 1, add to the counter. Divide that counter by total sites and multipl by 100 to get percent
     BREADTH_5X=$(samtools depth -aa "$BAM" | awk '{if($3>=5) c++} END {if(NR>0) print c/NR*100; else print 0}')
 
     # Mapping rate (% mapped reads)
